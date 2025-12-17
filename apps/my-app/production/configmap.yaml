@@ -1,0 +1,20 @@
+# Example ConfigMap for Production
+# Demonstrates environment-specific configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-app-config
+  labels:
+    app: my-app
+    environment: production
+data:
+  # Application configuration
+  APP_ENV: "production"
+  LOG_LEVEL: "info"
+  API_ENDPOINT: "https://api.example.com"
+  FEATURE_FLAGS: |
+    {
+      "newFeature": false,
+      "betaMode": false,
+      "debugLogging": false
+    }

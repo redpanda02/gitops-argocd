@@ -1,0 +1,20 @@
+# Example ConfigMap for Staging
+# Demonstrates environment-specific configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-app-config
+  labels:
+    app: my-app
+    environment: staging
+data:
+  # Application configuration
+  APP_ENV: "staging"
+  LOG_LEVEL: "debug"
+  API_ENDPOINT: "https://api.staging.example.com"
+  FEATURE_FLAGS: |
+    {
+      "newFeature": true,
+      "betaMode": true,
+      "debugLogging": true
+    }

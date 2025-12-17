@@ -1,0 +1,10 @@
+# Namespace definition for Production environment
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+  labels:
+    environment: production
+    managed-by: argocd
+  annotations:
+    description: "Production environment for live workloads"

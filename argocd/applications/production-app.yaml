@@ -1,0 +1,72 @@
+# ArgoCD Application for Production Environment
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-app-production
+  namespace: argocd
+  # Finalizer for proper cleanup
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/name: my-app
+    environment: production
+  annotations:
+    # Notifications annotation (if ArgoCD Notifications is installed)
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: production-alerts
+    notifications.argoproj.io/subscribe.on-health-degraded.slack: production-alerts
+spec:
+  # Reference to the ArgoCD Project
+  project: my-app-project
+
+  # Source configuration - Git repository
+  source:
+    # Replace with your actual repository URL
+    repoURL: https://github.com/redpanda02/gitops-argocd.git
+    targetRevision: HEAD  # Can also use 'main' or 'production' branch
+    path: apps/my-app/production
+
+  # Destination - where to deploy
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+
+  # Sync policy configuration
+  syncPolicy:
+    # AUTOMATIC SYNCHRONIZATION
+    # For production, you might want manual sync instead:
+    # Comment out 'automated' section for manual approval workflow
+    automated:
+      # Automatically prune resources that are no longer in Git
+      prune: true
+      # Automatically sync when ArgoCD detects drift (DRIFT DETECTION + AUTO-HEAL)
+      selfHeal: true
+      allowEmpty: false
+
+    # Sync options
+    syncOptions:
+      # Create namespace if it doesn't exist
+      - CreateNamespace=true
+      # Apply manifests using server-side apply
+      - ServerSideApply=true
+      # Respect ignore differences annotations
+      - RespectIgnoreDifferences=true
+      # Apply out of sync only (more efficient)
+      - ApplyOutOfSyncOnly=true
+
+    # Retry failed sync operations
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+
+  # Ignore certain differences
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas  # Useful if using HPA
+
+  # Revision history limit
+  revisionHistoryLimit: 10

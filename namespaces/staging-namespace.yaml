@@ -1,0 +1,10 @@
+# Namespace definition for Staging environment
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+  labels:
+    environment: staging
+    managed-by: argocd
+  annotations:
+    description: "Staging environment for testing before production promotion"

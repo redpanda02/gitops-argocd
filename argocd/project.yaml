@@ -1,0 +1,53 @@
+# ArgoCD Project Definition
+# This defines a project that groups applications and enforces RBAC
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: my-app-project
+  namespace: argocd
+  # Finalizer ensures proper cleanup
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: GitOps project for my-app across staging and production environments
+
+  # Source repositories allowed for this project
+  sourceRepos:
+    - '*'  # In production, specify exact repo URL
+
+  # Destination clusters and namespaces
+  destinations:
+    - namespace: staging
+      server: https://kubernetes.default.svc
+    - namespace: production
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+
+  # Allowed cluster-scoped resources (none for this project)
+  clusterResourceWhitelist: []
+
+  # Allowed namespace-scoped resources
+  namespaceResourceWhitelist:
+    - group: ''
+      kind: ConfigMap
+    - group: ''
+      kind: Secret
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: ServiceAccount
+    - group: apps
+      kind: Deployment
+    - group: networking.k8s.io
+      kind: Ingress
+
+  # Roles for RBAC (optional - can be extended)
+  roles:
+    - name: developer
+      description: Developer access to view and sync applications
+      policies:
+        - p, proj:my-app-project:developer, applications, get, my-app-project/*, allow
+        - p, proj:my-app-project:developer, applications, sync, my-app-project/*, allow
+      groups:
+        - developers
